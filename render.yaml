@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: message-board-app
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn mb_project.wsgi:application
