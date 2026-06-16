@@ -1,43 +1,80 @@
-from django.test import TestCase , client
+from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from .models import Post
 
+
 class BlogTests(TestCase):
+
     def setUp(self):
         self.user = get_user_model().objects.create_user(
-            username = 'username1',
-            email = 'test@email.com',
-            password = 'secret'
+            username="username1", email="test@email.com", password="secret"
         )
-        
+
         self.post = Post.objects.create(
-            title = 'good title',
-            body = 'good body',
-            author = self.user,
+            title="good title",
+            body="good body",
+            author=self.user,
         )
-        
+
     def test_string_representation(self):
-        post = Post(title='A sample title')
-        self.assertEqual(str(post) , post.title)
-        
+        post = Post(title="A sample title")
+        self.assertEqual(str(post), post.title)
+
     def test_post_content(self):
-        self.assertEqual(f'{self.post.title}' , 'good title')
-        self.assertEqual(f'{self.post.body}' , 'good body')
-        self.assertEqual(f'{self.post.author}' , 'username1')
-        
+        self.assertEqual(self.post.title, "good title")
+        self.assertEqual(self.post.body, "good body")
+        self.assertEqual(str(self.post.author), "username1")
+
     def test_post_list_view(self):
-        response = self.client.get(reverse('home'))
+        response = self.client.get(reverse("home"))
+
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response,'good body')
-        self.assertTemplateUsed(response , 'home.html')
-    
+        self.assertContains(response, "good body")
+        self.assertTemplateUsed(response, "home.html")
+
     def test_post_detail_view(self):
-        response = self.client.get('/post/1/')
-        no_response = self.client.get('/post/10000000/')
-        self.assertEqual(response.status_code , 200)
-        self.assertEqual(no_response.status_code , 404)
-        self.assertContains(response,'good title')
-        self.assertTemplateUsed(response, 'post_detail.html')
-        
+        response = self.client.get("/post/1/")
+        no_response = self.client.get("/post/10000000/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(no_response.status_code, 404)
+        self.assertContains(response, "good title")
+        self.assertTemplateUsed(response, "post_detail.html")
+
+    def test_post_create_view(self):
+        response = self.client.post(
+            reverse("post_new"),
+            {
+                "title": "New title",
+                "body": "New body",
+                "author": self.user.id,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Post.objects.last().title, "New title")
+        self.assertEqual(Post.objects.last().body, "New body")
+
+    def test_post_update_view(self):
+        response = self.client.post(
+            reverse("post_edit", args=[1]),
+            {
+                "title": "Updated title",
+                "body": "Updated body",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        self.post.refresh_from_db()
+
+        self.assertEqual(self.post.title, "Updated title")
+        self.assertEqual(self.post.body, "Updated body")
+
+    def test_post_delete_view(self):
+        response = self.client.get(reverse("post_delete", args=[1]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "post_delete.html")
