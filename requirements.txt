@@ -1,4 +1,12 @@
--i https://pypi.org/simple
-asgiref==3.11.1; python_version >= '3.9'
-django==6.0.6; python_version >= '3.12'
-sqlparse==0.5.5; python_version >= '3.8'
+asarPy==1.0.1
+asgiref==3.11.1
+click==8.4.1
+Django==6.0.6
+gunicorn==26.0.0
+packaging==26.2
+pillow==12.2.0
+setuptools==82.0.1
+sqlparse==0.5.5
+svgwrite==1.4.3
+Tree==0.2.4
+whitenoise==6.12.0
